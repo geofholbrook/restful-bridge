@@ -1,6 +1,6 @@
 export { RestfulBridge } from './RestfulBridge';
-import 'dotenv/config';
+import { isBrowser } from 'browser-or-node'
 
-export const createExpressApp = process.env.IN_BROWSER
+export const createExpressApp = isBrowser
 	? null
 	: require('./createExpressApp').createExpressApp;
