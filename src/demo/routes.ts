@@ -4,10 +4,10 @@ const bridge = new RestfulBridge({
 	port: 5060
 });
 
-export const [fetchIt] = bridge.createRoute<{}, { result: string }>(
+export const [fetchThing, addFetchRoute] = bridge.createRoute<{ thing: string }, { result: string }>(
 	'GET',
 	'/gimme',
-	() => Promise.resolve({ result: 'here' }),
+	params => Promise.resolve({ result: 'here: ' + params.thing }),
 );
 
 export const initializeServer = bridge.getServerInitializer()

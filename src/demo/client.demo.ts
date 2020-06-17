@@ -1,7 +1,8 @@
-import { fetchIt } from './routes'
+import { fetchThing } from './routes';
+
+console.log('waiting 2s')
 
 setTimeout(async () => {
-    const response = await fetchIt({})
-    console.log(response.result)
-}
-    , 2000)
+	const response = await fetchThing({ thing: 'foo' });
+	console.log(response.result);
+}, 2000);

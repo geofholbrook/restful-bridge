@@ -38,9 +38,15 @@ export class RestfulBridge {
 			? doJsonGet<TResponse>(this.getRemoteURL(route), params)
 			: doJsonPost<TResponse>(this.getRemoteURL(route), params);
 
-		const serverRouteAdder = (app: Express) => method === 'GET'
+		const serverRouteAdder = (app: Express) => {method === 'GET'
 			? createGetRoute(app, this.getRouteURL(route), serveFn)
-			: createPostRoute(app, this.getRouteURL(route), serveFn);
+			: createPostRoute(app, this.getRouteURL(route), serveFn)
+			return {
+				hostname: this.hostname,
+				port: this.port,
+				apiPrefix: this.apiPrefix
+			}
+		};
 
 		this.routeAdders.push(serverRouteAdder)
 
