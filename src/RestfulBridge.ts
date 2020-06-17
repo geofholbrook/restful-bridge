@@ -2,23 +2,21 @@ import { Express } from 'express';
 import { createGetRoute, createPostRoute } from './createRoute';
 import { doJsonGet, doJsonPost } from './doRequest';
 
-export class RestfulBridge {
+class Options {
 	hostname: string = 'http://localhost';
 	port: number = 4040;
 	apiPrefix: string = '/api/v1';
+}
 
-	routeAdders: Array<(app: Express) => void> = [];
+export class RestfulBridge {
+	options: Options;
+	routeAdders: Array<(app: Express) => Options> = [];
 
-	constructor(options?: { hostname?: string; port?: number; apiPrefix?: string }) {
-		if (options) {
-			if (options.hostname) this.hostname = options.hostname;
-			if (options.port) this.port = options.port;
-			if (options.apiPrefix) {
-				if (options.apiPrefix[0] !== '/') {
-					throw new Error('apiPrefix option must begin with a slash');
-				}
-				this.apiPrefix = options.apiPrefix;
-			}
+	constructor(options?: Partial<Options>) {
+		this.options = {...new Options(), ...options }
+		
+		if (this.options.apiPrefix[0] !== '/') {
+			throw new Error('apiPrefix option must begin with a slash');
 		}
 	}
 
@@ -28,7 +26,7 @@ export class RestfulBridge {
 		serveFn: (params: TParams) => Promise<TResponse>,
 	): [
 		(params: TParams) => Promise<TResponse>,
-		(app: Express) => void
+		(app: Express) => Options
 	] {
 		if (route[0] !== '/') {
 			throw new Error('routes must begin with a slash');
@@ -41,11 +39,7 @@ export class RestfulBridge {
 		const serverRouteAdder = (app: Express) => {method === 'GET'
 			? createGetRoute(app, this.getRouteURL(route), serveFn)
 			: createPostRoute(app, this.getRouteURL(route), serveFn)
-			return {
-				hostname: this.hostname,
-				port: this.port,
-				apiPrefix: this.apiPrefix
-			}
+			return this.options
 		};
 
 		this.routeAdders.push(serverRouteAdder)
@@ -59,18 +53,16 @@ export class RestfulBridge {
 	public getServerInitializer() {
 		return (app: Express) => {
 			this.routeAdders.forEach(adder => adder(app))
-			app.listen(this.port);
-			console.log('REST server listening on port', this.port)
+			app.listen(this.options.port);
+			console.log('REST server listening on port', this.options.port)
 		}
 	}
 
 	private getRemoteURL(route: string) {
-		return this.hostname + ':' + this.port.toString() + this.apiPrefix + route;
+		return this.options.hostname + ':' + this.options.port.toString() + this.options.apiPrefix + route;
 	}
 
 	private getRouteURL(route: string) {
-		return this.apiPrefix + route;
+		return this.options.apiPrefix + route;
 	}
-
-
 }
