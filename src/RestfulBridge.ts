@@ -5,6 +5,11 @@ import { doJsonGet, doJsonPost } from './doRequest';
 class Options {
 	hostname: string = 'http://localhost';
 	port: number = 4040;
+
+	// these will override the port property ... use if listen and request ports are different (because of proxies, for example)
+	listenPort?: number;
+	requestPort?: number;
+	
 	apiPrefix: string = '/api/v1';
 }
 
@@ -14,7 +19,10 @@ export class RestfulBridge {
 
 	constructor(options?: Partial<Options>) {
 		this.options = {...new Options(), ...options }
-		
+
+		if (!this.options.listenPort) this.options.listenPort = this.options.port;
+		if (!this.options.requestPort) this.options.requestPort = this.options.port;
+
 		if (this.options.apiPrefix[0] !== '/') {
 			throw new Error('apiPrefix option must begin with a slash');
 		}
@@ -53,13 +61,13 @@ export class RestfulBridge {
 	public getServerInitializer() {
 		return (app: Express) => {
 			this.routeAdders.forEach(adder => adder(app))
-			app.listen(this.options.port);
-			console.log('REST server listening on port', this.options.port)
+			app.listen(this.options.listenPort);
+			console.log('REST server listening on port', this.options.listenPort)
 		}
 	}
 
 	private getRemoteURL(route: string) {
-		return this.options.hostname + ':' + this.options.port.toString() + this.options.apiPrefix + route;
+		return this.options.hostname + ':' + this.options.requestPort!.toString() + this.options.apiPrefix + route;
 	}
 
 	private getRouteURL(route: string) {
