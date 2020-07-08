@@ -6,7 +6,7 @@ Create matching REST methods for client and server, strongly typed and without d
 In a common file required by both the server and client (e.g. `routes.ts`), create an instance of the RestfulBridge class
 
 ```
-import { RestfulBridge } from '../RestfulBridge';
+import { RestfulBridge } from 'restful-bridge';
 
 const bridge = new RestfulBridge({
     hostname: "site.com",
