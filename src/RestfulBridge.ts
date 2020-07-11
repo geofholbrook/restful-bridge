@@ -1,6 +1,7 @@
 import { Express } from 'express';
 import { createGetRoute, createPostRoute } from './createRoute';
 import { doJsonGet, doJsonPost } from './doRequest';
+import { isBrowser } from 'browser-or-node';
 
 type StripPromise<T> = T extends Promise<infer U> ? U : T;
 
@@ -35,13 +36,8 @@ export class RestfulBridge {
 		route: string,
 		serveFn: (...params: TParams) => TResponse,
 	): [(...params: TParams) => Promise<StripPromise<TResponse>>, (app: Express) => Options] {
-		
 		if (route[0] !== '/') {
 			throw new Error('routes must begin with a slash');
-		}
-
-		if (serveFn.length > 1) {
-			throw new Error('server function must have a single argument, or none')
 		}
 
 		const fetcher = (...params: TParams) =>
@@ -49,12 +45,22 @@ export class RestfulBridge {
 				? doJsonGet<StripPromise<TResponse>>(this.getRemoteURL(route), params[0] || {})
 				: doJsonPost<StripPromise<TResponse>>(this.getRemoteURL(route), params[0] || {});
 
-		const serverRouteAdder = (app: Express) => {
-			method === 'GET'
-				? createGetRoute(app, this.getRouteURL(route), serveFn)
-				: createPostRoute(app, this.getRouteURL(route), serveFn);
-			return this.options;
-		};
+		if (isBrowser) {
+			return [fetcher, null as unknown as (app: Express) => Options]
+		}
+
+		if (serveFn.length > 1) {
+			throw new Error('server function must have a single argument, or none');
+		}
+
+		const serverRouteAdder =
+			!isBrowser &&
+			((app: Express) => {
+				method === 'GET'
+					? createGetRoute(app, this.getRouteURL(route), serveFn)
+					: createPostRoute(app, this.getRouteURL(route), serveFn);
+				return this.options;
+			});
 
 		this.routeAdders.push(serverRouteAdder);
 
