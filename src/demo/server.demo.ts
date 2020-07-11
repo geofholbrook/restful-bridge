@@ -1,10 +1,13 @@
 import { createExpressApp } from "../createExpressApp";
-import { initializeServer, addThingRoute } from './routes'
+import { initializeServer, addThingRoute1, addThingRoute2 } from './routes'
 
 const app = createExpressApp();
 
-const { port } = addThingRoute(app);
+const { port } = addThingRoute1(app);
+addThingRoute2(app);
+
 app.listen(port)
+
 console.log('rest server listening on port ' + port)
 
 /**

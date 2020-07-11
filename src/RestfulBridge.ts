@@ -2,13 +2,7 @@ import { Express } from 'express';
 import { createGetRoute, createPostRoute } from './createRoute';
 import { doJsonGet, doJsonPost } from './doRequest';
 
-type FirstArgument<T> = T extends (arg: infer U) => any ? U : any;
 type StripPromise<T> = T extends Promise<infer U> ? U : T;
-
-type ParamsType<T> = FirstArgument<T>;
-type ResponseType<T> = T extends (...args: any[]) => any ? StripPromise<ReturnType<T>> : never;
-
-type MaybePromise<T> = Promise<T> | T;
 
 class Options {
 	hostname: string = 'http://localhost';
@@ -36,26 +30,24 @@ export class RestfulBridge {
 		}
 	}
 
-	public createRoute<TParams = null, TResponse = null>(
+	public createRoute<TParams extends any[], TResponse>(
 		method: 'GET' | 'POST',
 		route: string,
-		serveFn: (params: TParams | any) => Promise<TResponse | any>,
-	): [
-		typeof serveFn extends () => any
-			? () => MaybePromise<TResponse | ResponseType<typeof serveFn>>
-			: (
-					params: TParams | ParamsType<typeof serveFn>,
-			  ) => MaybePromise<TResponse | ResponseType<typeof serveFn>>,
-		(app: Express) => Options,
-	] {
+		serveFn: (...params: TParams) => TResponse,
+	): [(...params: TParams) => Promise<StripPromise<TResponse>>, (app: Express) => Options] {
+		
 		if (route[0] !== '/') {
 			throw new Error('routes must begin with a slash');
 		}
 
-		const fetcher = (params: TParams) =>
+		if (serveFn.length > 1) {
+			throw new Error('server function must have a single argument, or none')
+		}
+
+		const fetcher = (...params: TParams) =>
 			method === 'GET'
-				? doJsonGet<TResponse>(this.getRemoteURL(route), params)
-				: doJsonPost<TResponse>(this.getRemoteURL(route), params);
+				? doJsonGet<StripPromise<TResponse>>(this.getRemoteURL(route), params[0] || {})
+				: doJsonPost<StripPromise<TResponse>>(this.getRemoteURL(route), params[0] || {});
 
 		const serverRouteAdder = (app: Express) => {
 			method === 'GET'

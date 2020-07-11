@@ -18,6 +18,8 @@ export async function doJsonPost<T>(path: string, payload: any): Promise<T> {
 }
 
 export async function doJsonGet<T>(path: string, query: any): Promise<T> {
+    console.log("query:", query)
+
     return new Promise((resolve, reject) => {
         superagent
             .get(path)

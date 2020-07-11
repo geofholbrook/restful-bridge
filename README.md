@@ -15,17 +15,19 @@ const bridge = new RestfulBridge({
 });
 ```
 
-Calls to the createRoute method return an array of two elements: a function that makes the request, and a function that adds the route to an express server. The types for request parameters and response (probably JSON objects) must be specified. 
+Calls to the createRoute method return an array of two elements: a function that makes the request, and a function that adds the route to an express server. The types for request parameters and response (probably JSON objects) are inferred from the server function.
 
 ```
-export const [fetchThing, addThingRoute] = bridge.createRoute<{ thing: string }, { result: string }>(
+export const [fetchThing, addThingRoute] = bridge.createRoute(
 	'GET',
 	'/gimme',
-	params => Promise.resolve({ result: 'here: ' + params.thing }),
+	params => { result: 'here: ' + params.thing },
 );
 ```
 
-The client can import and use fetchThing as a stand-alone function:
+You can also enforce the types by providing them to the createRoute method, as in `bridge.createRoute<{ thing: string }, { result: string }>( ...`.
+
+The client can import and use the fetcher as a stand-alone function:
 
 ```
 // client.ts
