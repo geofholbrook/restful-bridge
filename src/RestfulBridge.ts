@@ -8,7 +8,7 @@ type StripPromise<T> = T extends Promise<infer U> ? U : T;
 type ParamsType<T> = FirstArgument<T>;
 type ResponseType<T> = T extends (...args: any[]) => any ? StripPromise<ReturnType<T>> : never;
 
-type MaybePromise<T> = Promise<T> | T
+type MaybePromise<T> = Promise<T> | T;
 
 class Options {
 	hostname: string = 'http://localhost';
@@ -41,9 +41,11 @@ export class RestfulBridge {
 		route: string,
 		serveFn: (params: TParams | any) => Promise<TResponse | any>,
 	): [
-		(
-			params: TParams | ParamsType<typeof serveFn>,
-		) => MaybePromise<TResponse | ResponseType<typeof serveFn>>,
+		typeof serveFn extends () => any
+			? () => MaybePromise<TResponse | ResponseType<typeof serveFn>>
+			: (
+					params: TParams | ParamsType<typeof serveFn>,
+			  ) => MaybePromise<TResponse | ResponseType<typeof serveFn>>,
 		(app: Express) => Options,
 	] {
 		if (route[0] !== '/') {
