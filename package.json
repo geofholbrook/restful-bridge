@@ -1,6 +1,6 @@
 {
   "name": "restful-bridge",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Create matching REST methods for client and server, strongly typed and without duplication.",
   "main": "lib/index.js",
   "files": [
