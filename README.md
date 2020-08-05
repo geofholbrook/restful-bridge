@@ -59,6 +59,16 @@ const app = createExpressApp();
 initializeServer(app);
 ```
 
+## preventing browser from loading server code
+
+If the client runs in a browser, we might have a problem because the server code will end up getting required via the common file (see above). You can do a conditional require, but if you're using Typescript you won't get the types, unless you use a trick like this (adapted from http://ideasintosoftware.com/typescript-conditional-imports/)
+
+```import { isBrowser } from 'browser-or-node';
+
+import * as serverOnlyModule from './server';
+let serverOnly = (null as unknown) as typeof serverOnlyModule;
+if (!isBrowser) serverOnly = require('./server/users');```
+
 
 
 
