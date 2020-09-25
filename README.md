@@ -68,7 +68,7 @@ import { isBrowser } from 'browser-or-node';
 
 import * as serverOnlyModule from './server';
 let serverOnly = (null as unknown) as typeof serverOnlyModule;
-if (!isBrowser) serverOnly = require('./server/users');
+if (!isBrowser) serverOnly = require('./server');
 ```
 
 
