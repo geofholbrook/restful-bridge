@@ -14,6 +14,9 @@ class Options {
 	requestPort?: number;
 
 	apiPrefix: string = '/api/v1';
+
+	verboseServer: boolean = true;
+	verboseClient: boolean = true;
 }
 
 export class RestfulBridge {
@@ -42,8 +45,8 @@ export class RestfulBridge {
 
 		const fetcher = (...params: TParams) =>
 			method === 'GET'
-				? doJsonGet<StripPromise<TResponse>>(this.getRemoteURL(route), params[0] || {})
-				: doJsonPost<StripPromise<TResponse>>(this.getRemoteURL(route), params[0] || {});
+				? doJsonGet<StripPromise<TResponse>>(this.getRemoteURL(route), params[0] || {}, this.options.verboseClient)
+				: doJsonPost<StripPromise<TResponse>>(this.getRemoteURL(route), params[0] || {}, this.options.verboseClient);
 
 		if (isBrowser) {
 			return [fetcher, null as unknown as (app: Express) => Options]
@@ -57,8 +60,8 @@ export class RestfulBridge {
 			!isBrowser &&
 			((app: Express) => {
 				method === 'GET'
-					? createGetRoute(app, this.getRouteURL(route), serveFn)
-					: createPostRoute(app, this.getRouteURL(route), serveFn);
+					? createGetRoute(app, this.getRouteURL(route), serveFn, this.options.verboseServer)
+					: createPostRoute(app, this.getRouteURL(route), serveFn, this.options.verboseServer);
 				return this.options;
 			});
 

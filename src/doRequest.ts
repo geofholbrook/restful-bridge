@@ -1,6 +1,10 @@
 import superagent from 'superagent';
 
-export async function doJsonPost<T>(path: string, payload: any): Promise<T> {
+export async function doJsonPost<T>(path: string, payload: any, verbose = true): Promise<T> {
+
+    if (verbose) {
+        console.log(`POST ${path} ${JSON.stringify(payload)}`)
+    }
     return new Promise((resolve, reject) => {
         superagent
             .post(path)
@@ -17,8 +21,12 @@ export async function doJsonPost<T>(path: string, payload: any): Promise<T> {
     });
 }
 
-export async function doJsonGet<T>(path: string, query: any): Promise<T> {
-    console.log("query:", query)
+export async function doJsonGet<T>(path: string, query: any, verbose = true): Promise<T> {
+
+    if (verbose) {
+        console.log(`GET ${path} ${JSON.stringify(query)}`)
+    }
+
 
     return new Promise((resolve, reject) => {
         superagent
