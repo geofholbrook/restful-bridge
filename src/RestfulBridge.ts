@@ -62,7 +62,7 @@ export class RestfulBridge {
 				if (this.options.verboseServer) {
 					console.log('adding route', route)
 				}
-				
+
 				method === 'GET'
 					? createGetRoute(app, this.getRouteURL(route), serveFn, this.options.verboseServer)
 					: createPostRoute(app, this.getRouteURL(route), serveFn, this.options.verboseServer);
@@ -75,12 +75,12 @@ export class RestfulBridge {
 	}
 
 	public getServerInitializer() {
-		return (app: Express, noListen = false) => {
+		return (app: Express, listen = true) => {
 			this.routeAdders.forEach((adder) => {
 				adder(app)
 			});
 			
-			if (!noListen) {
+			if (listen) {
 				app.listen(this.options.listenPort);
 				console.log('REST server listening on port', this.options.listenPort)
 			}
