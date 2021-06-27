@@ -34,19 +34,19 @@ export class RestfulBridge {
 		}
 	}
 
-	public createRoute<TParams extends any[], TResponse>(
+	public createRoute<TParams, TResponse>(
 		method: 'GET' | 'POST',
 		route: string,
-		serveFn: (...params: TParams) => TResponse,
-	): [(...params: TParams) => Promise<StripPromise<TResponse>>, (app: Express) => Options] {
+		serveFn: (params: TParams) => TResponse | Promise<TResponse>,
+	): [(params: TParams) => Promise<StripPromise<TResponse>>, (app: Express) => Options] {
 		if (route[0] !== '/') {
 			throw new Error('routes must begin with a slash');
 		}
 
-		const fetcher = (...params: TParams) =>
+		const fetcher = (params: TParams) =>
 			method === 'GET'
-				? doJsonGet<StripPromise<TResponse>>(this.getRemoteURL(route), params[0] || {}, this.options.verboseClient)
-				: doJsonPost<StripPromise<TResponse>>(this.getRemoteURL(route), params[0] || {}, this.options.verboseClient);
+				? doJsonGet<StripPromise<TResponse>>(this.getRemoteURL(route), params || {}, this.options.verboseClient)
+				: doJsonPost<StripPromise<TResponse>>(this.getRemoteURL(route), params || {}, this.options.verboseClient);
 
 		if (isBrowser) {
 			return [fetcher, null as unknown as (app: Express) => Options]
